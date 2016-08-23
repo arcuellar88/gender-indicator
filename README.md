@@ -23,6 +23,13 @@
   * wbstats
   * WID
   * RSocrata
+  
+
+#Instructions for Socrata
+ * Define local R file config.R with:
+  SOCRATA_EMAIL<-"test@iadb.org"
+  SOCRATA_PASSWORD<-"TEST"
+* source("config.R"
 
 
 
