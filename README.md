@@ -26,10 +26,16 @@
   
 
 #Instructions for Socrata
- * Define local R file config.R with:
-  SOCRATA_EMAIL<-"test@iadb.org"
-  SOCRATA_PASSWORD<-"TEST"
-* source("config.R"
+ * Define local R file config.R with
+ * source("config.R")
+
+Config.R:
+
+SOCRATA_EMAIL<-"test@iadb.org"
+
+SOCRATA_PASSWORD<-"TEST"
+
+
 
 
 
