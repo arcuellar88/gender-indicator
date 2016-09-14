@@ -63,8 +63,8 @@ load.WBIData <- function(outputFile, useBackup=FALSE){
     #detach(package: wbstats, unload = TRUE)
     
     #save to backup files
-    write.csv(findex_ind, file="findex_ind.csv", sep=";", quote=TRUE, row.names=FALSE)
-    write.csv(df, file="findex_data.csv", sep=";", quote=TRUE, row.names=FALSE)
+    write.csv(findex_ind, file="findex_ind.csv", quote=TRUE, row.names=FALSE)
+    write.csv(df, file="findex_data.csv", quote=TRUE, row.names=FALSE)
   }
   
   ############################################
@@ -73,7 +73,7 @@ load.WBIData <- function(outputFile, useBackup=FALSE){
   #                                          #
   ############################################
   
-  #get year of the indicators
+  #get year of reference of the indicators
   findex_ind <- transform(findex_ind, sourceYear=as.numeric(strsplit(as.character(sourceOrg), ", ")[[1]][2]))
     
   #remove country code
@@ -85,6 +85,9 @@ load.WBIData <- function(outputFile, useBackup=FALSE){
   df <- df[!is.na(df$value),] #remove rows where value=NA
   
   df <- df[!is.na(df$indicator),] #remove rows where indicator name=NA
+  
+  #set year as character (as we will be appending the "all" value later)
+  df$year <- as.character(df$year)
   
   #insert indicator names into main data frame
   df <- inner_join (df, select(findex_ind, -indicatorDesc, -source, -sourceID, -sourceOrg), by = 'indicatorID') 
@@ -116,7 +119,7 @@ load.WBIData <- function(outputFile, useBackup=FALSE){
   
   # If a filename was given, write result to the file
   if (!is.null(outputFile) && !(outputFile==""))
-    write.csv(df, file=outputFile, sep=";", row.names = FALSE)
+    write.csv(df, file=outputFile, row.names = FALSE)
   
   #return the final data frame
   return(df)

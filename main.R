@@ -71,12 +71,13 @@ wbi <- load.WBIData(WBI_OUTPUT_FILENAME, useBackup=TRUE)
 # Concatenate the datasets      #
 #################################
 #rbind(idb, wbi, ncd)
-data <- bind_rows(idb, wbi, ncd)
+#data <- bind_rows(idb, wbi, ncd)
+data <- bind_rows(idb, wbi)
 
 #remove the temporary tables
 rm(idb)
 rm(wbi)
-rm(ncd)
+#rm(ncd)
 
 #################################
 # Look for duplicate indicators #

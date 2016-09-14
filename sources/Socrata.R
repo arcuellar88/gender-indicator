@@ -67,6 +67,8 @@ load.IDBData <- function(outputFile, useBackup=FALSE){
   df$country <- tolower(df$country)
   #then, capitalize first letters, except stop words
   df$country <- toTitleCase(df$country)
+  #use factors for countries
+  df$country <- as.factor(df$country)
   
   #convert year to character, as we are going to have the "all" member
   df$year <- as.character(df$year)
