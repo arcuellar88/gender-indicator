@@ -38,7 +38,7 @@ load.IDBData <- function(outputFile, useBackup=FALSE){
   
   if (useBackup)
   {
-    df <- read.csv(file.choose())
+    df <- read.csv(file="idb_data.csv")
   }
   else
   {
@@ -47,6 +47,9 @@ load.IDBData <- function(outputFile, useBackup=FALSE){
     privateResourceToReadCsvUrl <- "https://mydata.iadb.org/Gender/Numbers-for-Development-Gender-Indicators/u5nc-wtuz" # dataset
     
     df <- read.socrata(url = privateResourceToReadCsvUrl, email = socrataEmail, password = socrataPassword)
+    
+    #save backup file
+    write.csv(df, file="idb_data.csv", quote=TRUE, row.names=FALSE)
   }
   
   ############################################
