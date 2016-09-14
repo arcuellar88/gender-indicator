@@ -61,9 +61,7 @@ df <- df %>%
 
 df <- df %>% mutate (type = ifelse (grepl ("female", indicator), "female", ifelse (grepl ("male",indicator),"male", ifelse (grepl("total",indicator),"total", ifelse (grepl("urban",indicator), "urban", ifelse (grepl("rural",indicator), "rural", "other")) %>% as.character()))))
 
-
-
-#Convert all division variables to numeric 
+#Convert all variables to numeric , except the type
 x <- (nCols+1):(nCols+16) 
 df[x] <- lapply(df[x], as.numeric) 
   

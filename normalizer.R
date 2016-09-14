@@ -1,44 +1,30 @@
 
-############################################
-#                                          #
-#            Clean appended data           #
-#                                          #
-############################################
 
-#remove indicators that have NAs in value variable
-df <- df[!is.na(df$value),]
-
-
-IDB <- df
-
-############################################
-#                                          #
-#           Normalization and adjustment   #
-#                with multiplier           #  
-#                                          #
-############################################
-
-#convert to numeric
-IDB$value <- as.numeric(IDB$value)
-
-#normalize indexing
-indicator_names <- names(table(IDB$indicator))
-IDB$value_normalized <- NA
-
-for(i in indicator_names){
+computeScores <- function(d) {
+  indicator_names <- unique(d$indicator)
   
-  selection <- which(IDB$indicator %in% i)
-  IDB$value_normalized[selection] <- scale(IDB$value[selection])
+  d$score <- NA
   
+  for(name in indicator_names){
+    
+    sel.indicator <- which(d$indicator %in% name)
+    
+    #which years this indicator have
+    years <- unique(d$year[sel.indicator])
+    
+    for (y in years)
+    {
+      #select all countries for this single indicator and year
+      selection <- which(d$indicator %in% name & d$year %in% y)
+      
+      #computes standard score within the selected subset
+      d$score[selection] <- scale(d$value[selection])
+    }
+  }
+  
+  return(d)
 }
 
-#adjust with multiplier
-IDB$multiplier<- as.numeric(IDB$multiplier)
-
-IDB <-
-  IDB %>%
-  # mutate(value_with_correction = value * multiplier) %>%
-  mutate(value_normalized_with_correction = value_normalized * multiplier)
 
 
 

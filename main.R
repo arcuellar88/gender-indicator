@@ -43,7 +43,7 @@ library(countrycode)
 #                                          #
 ############################################
 
-setwd("D:\\Consultorias\\BID 2016-2017\\Text Analytics\\SPD\\R code\\gender-indicator-github")
+#setwd("")
 #################################
 # SET UP Algorithm Parameters   #
 #################################
@@ -129,39 +129,23 @@ rm(data.agg.years)
 # from the average.             #
 #################################
 
-computeScores <- function(d) {
-  indicator_names <- unique(d$indicator)
-  
-  d$score <- NA
-  
-  for(name in indicator_names){
-    
-    sel.indicator <- which(d$indicator %in% name)
-    
-    #which years this indicator have
-    years <- unique(d$year[sel.indicator])
-    
-    for (y in years)
-    {
-      #select all countries for this single indicator and year
-      selection <- which(d$indicator %in% name & d$year %in% y)
-      
-      #computes standard score within the selected subset
-      d$score[selection] <- scale(d$value[selection])
-    }
-  }
-  
-  return(d)
-}
-
+source("normalizer.R")
 data <- computeScores(data)
 
 #################################
 # Classify Indicators           #
 #################################
 source("classifier.R")
-classify(data)
+data <- classify(data)
 
+#################################
+#  Adjust multiplier
+# ---> should this be run by normalizer or classifier?
+
+data <-
+  data %>%
+  mutate(score_corrected = score * multiplier)
+#################################
 
 
 #################################
