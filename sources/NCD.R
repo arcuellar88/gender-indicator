@@ -20,7 +20,8 @@
 
 #No ceiling data is an innitiative developed by the Clinton Foundation.
 #This was a one time effort that gathered data from multiple sources. #Information regarding renovating this effort is not yet defined.
-#data was downloaded from a space in Github: 
+#data was downloaded from a space in Github: r55555555555555555555555ilj5
+[]
 
 NCD <- function(){
 
@@ -29,8 +30,8 @@ NCD <- function(){
 #install.packages("dplyr")
 #install.packages("dplyr")
 #install.packages("stringr")
-library(dplyr)
-library(tidyr)
+#library(dplyr)
+#library(tidyr)
 
 
 
@@ -41,10 +42,10 @@ library(tidyr)
 #       Importing untransformed data      #
 #                                          #
 ############################################
-
+NCD <- NA
 #set working directory to csv files in host computer (change if required)
 #setwd("")
-
+setwd(NCD_FOLDER)
 # Get file names and vector with ro be used for object names
 files <- list.files(getwd()) 
 
@@ -83,7 +84,7 @@ full_data$series <- sub (".csv", "", full_data$series)
 
 
 # Load country and indicator information to be joind into df
-setwd("//hqpnas01/EFS/Gender/Gender/Dashboard/Dashboard Coding/NCD")
+setwd("D:\\Consultorias\\BID 2016-2017\\Text Analytics\\SPD\\noceilings-data")
 
 countries <- read.csv('countries.csv', stringsAsFactors = FALSE)
 indicators <- read.csv('indicators.csv', stringsAsFactors = FALSE)
