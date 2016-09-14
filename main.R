@@ -155,7 +155,7 @@ data <-
 setwd(OUTPUT_FOLDER)
 write.table(data, file=MAIN_OUTPUT_FILENAME, sep=";", quote=TRUE, row.names=FALSE)
 
-
-paste("Algorithm finished processing...", "---", "indicators and", length(data$indicator), "rows of data")
+total_indicators <- length(unique(data$indicator))
+paste("Algorithm finished processing...", total_indicators, "indicators and", length(data$indicator), "rows of data")
 paste("Results were written to CSV file:", MAIN_OUTPUT_FILENAME, "on folder", OUTPUT_FOLDER)
 
