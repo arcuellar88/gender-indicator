@@ -13,28 +13,24 @@
 
 
 ############################################
+# Load and Harmonize a dataset from:       #
+############################################
 #                                          #
-#       NO CEILING DATA                    #
+#            No Ceilings Data              #
+#                                          #
+#   Downloaded from www.noceilings.org     #
+#   Set the folder where the data can      #
+#    be found in the NCD_FOLDER variable   #
+#    (config.R file)                       #
 #                                          #
 ############################################
 
+load.NCData <- function(outputFile){
+
+
 #No ceiling data is an innitiative developed by the Clinton Foundation.
-#This was a one time effort that gathered data from multiple sources. #Information regarding renovating this effort is not yet defined.
-#data was downloaded from a space in Github: r55555555555555555555555ilj5
-[]
-
-NCD <- function(){
-
-#load libraries and packages
-#install.packages("stringr")
-#install.packages("dplyr")
-#install.packages("dplyr")
-#install.packages("stringr")
-#library(dplyr)
-#library(tidyr)
-
-
-
+#This was a one time effort that gathered data from multiple sources.
+#Information regarding renovating this effort is not yet defined.
 
 
 ############################################
@@ -42,16 +38,17 @@ NCD <- function(){
 #       Importing untransformed data      #
 #                                          #
 ############################################
-NCD <- NA
-#set working directory to csv files in host computer (change if required)
-#setwd("")
-setwd(NCD_FOLDER)
-# Get file names and vector with ro be used for object names
-files <- list.files(getwd()) 
+df <- NA
+
+#setwd(NCD_FOLDER)
+
+# Get file names
+files <- list.files(paste0(NCD_FOLDER,'/csv')) 
 
 #files <- list.files (paste (getwd(), '/csv', sep = ''), full.names = TRUE)
 
-
+wd <- getwd()
+setwd(paste0(NCD_FOLDER,'/csv'))
 
 # LOOP to create dataframes from all csv files
 indicator_list <- list()
@@ -64,10 +61,24 @@ for(i in 1:length(files)){
   #assign(df_name, temp)
   #expression <- parse(text = names[i]) # results in: expression(AllstarFull)
   #print(eval(expression))
+  
+  #put in the appropriate structure (from wide to long form)
+  temp <- gather(temp, year, value, 2:(length(names(temp))-1))
+  
+  #remove rows that have NAs in value variable
+  temp <- temp[!is.na(temp$value),]
+  
+  #convert text "yes/no" rows into numeric 1/0 values  
+  temp <- temp %>%
+    mutate(value = ifelse(value=="yes","1",ifelse(value=="no","0",value)))
+  
+  #ensure that all data have numeric value
+  temp$value <- as.numeric(temp$value)
+  
   indicator_list[[i]] = temp   # adds indicator df to list
 }
 
-
+setwd(wd)
 
 ############################################
 #                                          #
@@ -79,89 +90,33 @@ for(i in 1:length(files)){
 # Collapses list with data frames into single dataframe (must have same variables - missing replaced with NAs)
 full_data <- bind_rows(indicator_list) 
 
-# Remove csv from series to allow
+#free memory
+rm(indicator_list)
+
+# Remove csv extension from series names
 full_data$series <- sub (".csv", "", full_data$series)
 
 
 # Load country and indicator information to be joind into df
-setwd("D:\\Consultorias\\BID 2016-2017\\Text Analytics\\SPD\\noceilings-data")
 
-countries <- read.csv('countries.csv', stringsAsFactors = FALSE)
-indicators <- read.csv('indicators.csv', stringsAsFactors = FALSE)
+countries <- read.csv(paste0(NCD_FOLDER,'/countries.csv'), stringsAsFactors = FALSE)
+indicators <- read.csv(paste0(NCD_FOLDER,'/indicators.csv'), stringsAsFactors = FALSE)
 indicators <- select(indicators, theme, series, name, unit, source, tertiary) 
 
-#create region filter
-regions<- c ('CSC',
-                   'CCB',
-                   'CCB',
-                   'CID',
-                   'CAN',
-                   'CSC',
-                   'CSC',
-                   'CAN',
-                   'CID',
-                   'CID',
-                   'CAN',
-                   'CID',
-                   'CID',
-                   'CCB',
-                   'CDH',
-                   'CID',
-                   'CCB',
-                   'CID',
-                   'CID',
-                   'CID',
-                   'CSC',
-                   'CAN',
-                   'CCB',
-                   'CCB',
-                   'CSC',
-                   'CAN')
-
-#Create BDI countries
-country<- c('Argentina',
-                   'Bahamas',
-                   'Barbados',
-                   'Belize',
-                   'Bolivia',
-                   'Brazil',
-                   'Chile',
-                   'Colombia',
-                   'Costa Rica',
-                   'Dominican Republic',
-                   'Ecuador',
-                   'El Salvador',
-                   'Guatemala',
-                   'Guyana',
-                   'Haiti',
-                   'Honduras',
-                   'Jamaica',
-                   'Mexico',
-                   'Nicaragua',
-                   'Panama',
-                   'Paraguay',
-                   'Peru',
-                   'Suriname',
-                   'Trinidad & Tobago',
-                   'Uruguay',
-                   'Venezuela')
-
-#Create BID country and region filter
-regions <- data.frame(regions, country)
 
 
-#LOOP: Combine data with master country, indicator name and relevant variables
-NCD <-
+#Combine data with country names, indicator names and relevant variables
+df <-
   full_data %>%
   rename(iso = ISO) %>%                           # rename ISO variables to iso - used for country join
   full_join(countries, by = 'iso') %>%            # join country data by "iso"
   rename(country = name) %>%                     # change country variable name - conflict with indicator variable "name"
   #filter(country %in% country_names) %>%       # select only IDB countries
   full_join (indicators, by = 'series') %>%     # join indicator data by "series"
-  rename(indicator = name) %>% # select necessary variables
-  gather(year, value, X1995:X2014)           #change years depending on                                                     what was downloaded each                                                               year(X1995:X2015)
+  rename(indicator = name) # change "name" variable to "indicator"
+  
 
-
+rm(full_data)
 
 
 
@@ -172,133 +127,69 @@ NCD <-
 ############################################
 
 #remove x at begining of each year variable
-NCD$year <- sub ("X", "", NCD$year)
+df$year <- sub ("X", "", df$year)
 
 
-#remove non-disagregated variables and keep male/female/total/rural/urban/ratio
-NCD <- NCD %>% filter (!tertiary =="")
+#Note: tertiary is a complementary variable,
+#      it being empty doesn't mean that the
+#      indicator is not disaggregated
+#df <- df %>% filter (!tertiary =="")
 
 #remove indicators that have NAs in value variable
-NCD <- NCD[!is.na(NCD$value),]
-
+df <- df[!is.na(df$value),]
 
 
 
 ############################################
 #                                          #
-#            Create multiplier and         # 
-#               division variables         #
+#  Adding unit and type information        #
 #                                          #
 ############################################
 
-
-#Create multiplier variable (1 is neutral, -1 is interpreted negative)
-NCD<-NCD %>% 
-  mutate (multiplier = ifelse(grepl ('outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea',indicator), -1, 1) %>% as.character())
-
-#Create the lists with terms by division
-SPH <- c("pregnancy", "death", "mortality", "fertility", "condom", "contracep", "birth", "antire", "immu", "survi", "lifetime", "child")
-ICS_PM <- c("internet", "broadband", "services", "administration", "representation", "judiciary", "participant", "mobile", "right", "contract")
-ICS_CS <- c("violence", "rob", "police", "inheritance", "beating", "peace", "rape", "ownership", "homecide", "headed", "military", "fertility", "judiciary")
-LMK <- c("empl","pension","unempl", "training","vocational", "work", "unpaid", "smoking", "self")
-CMF <- c("bank", "account", "check","financial", "contract", "business", "own-account")
-EDU <- c("school", "literacy", "dropout")
-FMM <- c("urban", "rural")
-CCS <- c("journalist", "internet")
-EXR <- c("internet", "commu", "journal")
-CTI <- c("tech", "internet", "science", "broadband", "intellectual")
-ENE <- c("energy", "fuel", "methane", "electric")
-WSA <- c("water", "sanita", "well", "electricity", "fresh")
-RND <- c("agri", "land", "rural", "protected")
-TSP <- c("trans", "road", "construc", "infras")
-HUD <- c("hous","urban")
-
-
-#Create division categories using patters from lists created above
-NCD <-NCD %>% 
-  mutate (SPH = ifelse(grepl (paste(SPH,collapse="|"), indicator), 1, 0) %>% as.character()) %>% 
-  mutate (ICS_PM = ifelse(grepl (paste(ICS_PM,collapse="|"), indicator), 1, 0) %>% as.character()) %>% 
-  mutate (ICS_CS = ifelse(grepl (paste(ICS_CS,collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (LMK = ifelse(grepl (paste(LMK, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (CMF = ifelse(grepl (paste(CMF, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (EDU = ifelse(grepl (paste(EDU,collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (FMM = ifelse(grepl (paste(FMM, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (CCS = ifelse(grepl (paste(CCS, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (EXR = ifelse(grepl (paste(EXR,collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (CTI = ifelse(grepl (paste(CTI, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (ENE = ifelse(grepl (paste(ENE, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (WSA = ifelse(grepl (paste(WSA,collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (RND = ifelse(grepl (paste(RND, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (TSP = ifelse(grepl (paste(TSP, collapse="|"), indicator), 1, 0) %>% as.character()) %>%
-  mutate (HUD = ifelse(grepl (paste(HUD, collapse="|"), indicator), 1, 0) %>% as.character())
-
-############################################
-#                                          #
-#           Adding unit information        #
-#                                          #
-############################################
-
-NCD <- NCD %>%
-  mutate(new_indicator = paste(indicator, ' (', unit, ')', sep = '') ) %>%
+df <- df %>%
+  mutate(new_indicator = paste0(indicator, ' (', unit, ')') ) %>%
   select(-indicator) %>%
   rename(indicator=new_indicator)
 
 
-############################################
-#                                          #
-#           Normalization and adjustment   #
-#                with multiplier           #  
-#                                          #
-############################################
 
-#convert to numeric
-NCD$value <- as.numeric(NCD$value)
-
-#normalize indexing
-indicator_names <- names(table(NCD$indicator))
-NCD$value_normalized <- NA
-
-for(i in indicator_names){
-  
-  selection <- which(NCD$indicator %in% i)
-  NCD$value_normalized[selection] <- scale(NCD$value[selection])
-  
-}
-
-#adjust with multiplier
-NCD$multiplier<- as.numeric(NCD$multiplier)
-
-NCD <-
-  NCD %>%
-  mutate(value_with_correction = value * multiplier) %>%
-  mutate(value_normalized_with_correction = value_normalized * multiplier)
-
-#Convert to numeric all division variables
-x <- 10:24
-NCD[x] <- lapply(NCD[x], as.numeric) 
-
-#filter out WB data
-
-NCD <- NCD %>%
+######################################
+# Filter WB data, as this will       #
+# already be included by another     #
+# function                           #
+######################################
+df <- df %>%
   mutate (duplicate = ifelse (grepl ('Global Findex|World Bank', source), 1, 0) %>% as.character())
 
-NCD <- NCD %>%
+df <- df %>%
   filter(duplicate==0) %>%
   select(-duplicate) 
 
 #select only variables of interest for row bind
-NCD <- NCD %>%
-  select(-theme, -unit) %>%
-  rename(type=tertiary) %>%
-  rename(sourceOrg=source)
+df <- df %>%
+  select(-theme, -unit, -short_name, -series, -iso, -tertiary)
 
-NCD$year<- as.numeric(NCD$year)
+df <- df %>%
+  mutate (sourceYear = NA) %>% #--- TODO -------------------
+  mutate (isRegion = 0)
+
+
+rm(countries, indicators, regions, temp)
+
+
+#Ensure structure is correct
+
+df$value <- as.numeric(df$value)         
+df$indicator <- as.factor(df$indicator)
+df$sourceYear <- as.numeric(df$sourceYear)
 
 
 
-rm(full_data, countries, indicators, regions, temp)
+# If a filename was given, write result to the file
+if (!is.null(outputFile) && !(outputFile==""))
+  write.csv(df, file=outputFile, row.names = FALSE)
 
-#Save data into CSV file
-write.csv(NCD, '/data/NCD2.csv', row.names = FALSE)
+#return the final data frame
+return(df)
 
 }
