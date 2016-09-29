@@ -115,7 +115,8 @@ load.WBIData <- function(outputFile, useBackup=FALSE){
   df <- df %>%
     select(-indicatorID, -iso)
   
-  
+  #ensure compatible structure
+  df$country <- as.vector(df$country)
   
   # If a filename was given, write result to the file
   if (!is.null(outputFile) && !(outputFile==""))
