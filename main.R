@@ -43,7 +43,7 @@ library(countrycode)
 #                                          #
 ############################################
 
-#setwd("")
+#setwd("SOURCE_FOLDER")
 #################################
 # SET UP Algorithm Parameters   #
 #################################
@@ -56,7 +56,7 @@ source("config.R")
 #source("test/IDB.R")
 source("sources/Socrata.R")
 source("sources/WB.R")
-#source("test/NCD.R")
+source("sources/NCD.R")
 
 
 #################################
@@ -65,19 +65,18 @@ source("sources/WB.R")
 
 idb <- load.IDBData(IDB_OUTPUT_FILENAME, useBackup=TRUE)
 wbi <- load.WBIData(WBI_OUTPUT_FILENAME, useBackup=TRUE)
-#ncd <- load.NCData(NCD_OUTPUT_FILENAME)
+ncd <- load.NCData(NCD_OUTPUT_FILENAME)
 
 #################################
 # Concatenate the datasets      #
 #################################
-#rbind(idb, wbi, ncd)
-#data <- bind_rows(idb, wbi, ncd)
-data <- bind_rows(idb, wbi)
+
+data <- bind_rows(idb, wbi, ncd)
 
 #remove the temporary tables
 rm(idb)
 rm(wbi)
-#rm(ncd)
+rm(ncd)
 
 #################################
 # Look for duplicate indicators #
