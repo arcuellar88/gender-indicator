@@ -50,20 +50,23 @@ files <- list.files(paste0(NCD_FOLDER,'/csv'))
 wd <- getwd()
 setwd(paste0(NCD_FOLDER,'/csv'))
 
+write.table(c("iso,indicator_id,year,value"),"export.csv", row.names=F,na="NA",append=FALSE, quote= FALSE, sep=",", col.names=F)
+
 # LOOP to create dataframes from all csv files
-indicator_list <- list()
+#indicator_list <- list()
 for(i in 1:length(files)){
   
   f = readLines(files[i])                           # used for counts
   temp = read.csv(files[i], nrows = length(f) - 7)  # removes the last 7 lines of csv
-  temp$series = rep(files[i], nrow(temp)) # creates a variable with the indicator name
+  fname = str_sub(files[1],1,-5) # remove .csv from the file name
+  temp$series = rep(fname, nrow(temp)) # creates a variable with the indicator name
   #df_name = paste('IND-', 1, sep = '')
   #assign(df_name, temp)
   #expression <- parse(text = names[i]) # results in: expression(AllstarFull)
   #print(eval(expression))
   
   #put in the appropriate structure (from wide to long form)
-  temp <- gather(temp, year, value, 2:(length(names(temp))-1))
+  temp <- gather(temp, year, value, 2:(length(names(temp))-1)) %>%  filter(value != "")
   
   #remove rows that have NAs in value variable
   temp <- temp[!is.na(temp$value),]
@@ -75,7 +78,8 @@ for(i in 1:length(files)){
   #ensure that all data have numeric value
   temp$value <- as.numeric(temp$value)
   
-  indicator_list[[i]] = temp   # adds indicator df to list
+  write.table(temp,"export.csv", row.names=F,na="NA",append=T, quote= FALSE, sep=",", col.names=F)
+  #indicator_list[[i]] = temp   # adds indicator df to list
 }
 
 setwd(wd)
@@ -88,14 +92,16 @@ setwd(wd)
 
 
 # Collapses list with data frames into single dataframe (must have same variables - missing replaced with NAs)
-full_data <- bind_rows(indicator_list) 
+#full_data <- bind_rows(indicator_list) 
 
 #free memory
-rm(indicator_list)
+#rm(indicator_list)
 
 # Remove csv extension from series names
-full_data$series <- sub (".csv", "", full_data$series)
+#full_data$series <- sub (".csv", "", full_data$series)
 
+
+write.csv(full_data, file=outputFile, row.names = FALSE)
 
 # Load country and indicator information to be joind into df
 
@@ -106,17 +112,17 @@ indicators <- select(indicators, theme, series, name, unit, source, tertiary)
 
 
 #Combine data with country names, indicator names and relevant variables
-df <-
-  full_data %>%
-  rename(iso = ISO) %>%                           # rename ISO variables to iso - used for country join
-  full_join(countries, by = 'iso') %>%            # join country data by "iso"
-  rename(country = name) %>%                     # change country variable name - conflict with indicator variable "name"
-  #filter(country %in% country_names) %>%       # select only IDB countries
-  full_join (indicators, by = 'series') %>%     # join indicator data by "series"
-  rename(indicator = name) # change "name" variable to "indicator"
+#df <-
+#  full_data %>%
+#  rename(iso = ISO) %>%                           # rename ISO variables to iso - used for country join
+#  full_join(countries, by = 'iso') %>%            # join country data by "iso"
+#  rename(country = name) %>%                     # change country variable name - conflict with indicator variable "name"
+#  #filter(country %in% country_names) %>%       # select only IDB countries
+#  full_join (indicators, by = 'series') %>%     # join indicator data by "series"
+#  rename(indicator = name) # change "name" variable to "indicator"
   
 
-rm(full_data)
+#rm(full_data)
 
 
 
@@ -127,7 +133,7 @@ rm(full_data)
 ############################################
 
 #remove x at begining of each year variable
-df$year <- sub ("X", "", df$year)
+# df$year <- sub ("X", "", df$year)
 
 
 #Note: tertiary is a complementary variable,
@@ -136,7 +142,7 @@ df$year <- sub ("X", "", df$year)
 #df <- df %>% filter (!tertiary =="")
 
 #remove indicators that have NAs in value variable
-df <- df[!is.na(df$value),]
+#df <- df[!is.na(df$value),]
 
 
 
@@ -146,10 +152,10 @@ df <- df[!is.na(df$value),]
 #                                          #
 ############################################
 
-df <- df %>%
-  mutate(new_indicator = paste0(indicator, ' (', unit, ')') ) %>%
-  select(-indicator) %>%
-  rename(indicator=new_indicator)
+#df <- df %>%
+#  mutate(new_indicator = paste0(indicator, ' (', unit, ')') ) %>%
+#  select(-indicator) %>%
+#  rename(indicator=new_indicator)
 
 
 
@@ -158,36 +164,35 @@ df <- df %>%
 # already be included by another     #
 # function                           #
 ######################################
-df <- df %>%
-  mutate (duplicate = ifelse (grepl ('Global Findex|World Bank', source), 1, 0) %>% as.character())
+#df <- df %>%
+#  mutate (duplicate = ifelse (grepl ('Global Findex|World Bank', source), 1, 0) %>% as.character())
 
-df <- df %>%
-  filter(duplicate==0) %>%
-  select(-duplicate) 
+#df <- df %>%
+#  filter(duplicate==0) %>%
+#  select(-duplicate) 
 
 #select only variables of interest for row bind
-df <- df %>%
-  select(-theme, -unit, -short_name, -series, -iso, -tertiary)
+#df <- df %>%
+  #  select(-theme, -unit, -short_name, -series, -iso, -tertiary)
 
-df <- df %>%
-  mutate (sourceYear = NA) %>% #--- TODO -------------------
-  mutate (isRegion = 0)
+# df <- df %>%
+  #  mutate (sourceYear = NA) %>% #--- TODO -------------------
+  # mutate (isRegion = 0)
 
 
-rm(countries, indicators, regions, temp)
+# rm(countries, indicators, regions, temp)
 
 
 #Ensure structure is correct
 
-df$value <- as.numeric(df$value)         
-df$indicator <- as.factor(df$indicator)
-df$sourceYear <- as.numeric(df$sourceYear)
-
+# df$value <- as.numeric(df$value)         
+# df$indicator <- as.factor(df$indicator)
+# df$sourceYear <- as.numeric(df$sourceYear)
 
 
 # If a filename was given, write result to the file
-if (!is.null(outputFile) && !(outputFile==""))
-  write.csv(df, file=outputFile, row.names = FALSE)
+# if (!is.null(outputFile) && !(outputFile==""))
+#  write.csv(df, file=outputFile, row.names = FALSE)
 
 #return the final data frame
 return(df)
