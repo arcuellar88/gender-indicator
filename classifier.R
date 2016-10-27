@@ -1,62 +1,65 @@
+
+con <- idaConnect("BLUDB","","")
+idaInit(con)
 #Load the lists with terms by division
-division<-read.csv("./data/terms.csv", header=TRUE)
+#division<-read.csv("./data/terms.csv", header=TRUE)
+
+division <- idaQuery("SELECT * FROM DASH6851.TERMS",as.is=F)
 
 #Create list of divisions
-div<-unique(division$division)
+div<-unique(division$DIVISION)
 
 #Create the funcion to identify the divisions based on the terms and the name of the indicator
 fDivision<-function(indicator){
   sapply(indicator, function(indicator){
     divValue<-""
     for(name in div){
-      sel.division <- which(division$division %in% name)
-      if (max(grepl(paste(division$term[sel.division], collapse="|"),indicator))==1) 
+      sel.division <- which(division$DIVISION %in% name)
+      if (max(grepl(paste(division$TERM[sel.division], collapse="|"),indicator))==1) 
       { 
         divValue<-paste(name,divValue,sep=",")
       }
     }
     return(substr(divValue, 1, nchar(divValue)-1))
   })
-  
 }
-
-############################################
-#                                          #
-#            Create multiplier             # 
-#                                          #
-#                                          #
-############################################
+#------------------------------------------#
+#            CLASSIFY                      # 
+#   Area, Gender, Quintil,                 #
+#    Age, Education, Division              #
+#------------------------------------------#
 classify <- function(df) {
   
-  # get the number of columns in the data
-  nCols <- length(names(df))
+  #------------------------------------------#
+  #             GENDER                       #
+  #------------------------------------------#
+  df <- df %>% mutate (GENDER = ifelse (grepl ("female", INDICATOR), "female", ifelse (grepl("male",INDICATOR),"male", "other")) %>% as.character())
   
-#Create multiplier variable (1 is neutral, -1 is interpreted negative)
-df<-df %>% 
-  mutate (multiplier = ifelse(grepl ('outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea',indicator), -1, 1) %>% as.character())
-
-############################################
-#                                          #
-#            Create division               # 
-#                                          #
-#                                          #
-############################################
-
-#Create division using the fDivision function
-df <- df %>% mutate(division=fDivision(indicator))
-
-############################################
-#                                          #
-#             Create type                  #
-#                                          #
-#                                          #
-############################################
-
-df <- df %>% mutate (type = ifelse (grepl ("female", indicator), "female", ifelse (grepl ("male",indicator),"male", ifelse (grepl("total",indicator),"total", ifelse (grepl("urban",indicator), "urban", ifelse (grepl("rural",indicator), "rural", "other")) %>% as.character()))))
-
-#Convert all variables to numeric , except the type
-#x <- (nCols+1):(nCols+16) 
-#df[x] <- lapply(df[x], as.numeric) 
+  #------------------------------------------#
+  #             AREA                         #
+  #------------------------------------------#
+  df <- df %>% mutate (AREA = ifelse (grepl ("urban", INDICATOR), "urban", ifelse (grepl("rural",INDICATOR),"rural", "other")) %>% as.character())
+  
+  #------------------------------------------#
+  #             QUINTIL                      #
+  #------------------------------------------#
+  df <- df %>% mutate (QUINTIL = "N/A") 
+  
+  #------------------------------------------#
+  #             EDUCATION                    #
+  #------------------------------------------#
+  df <- df %>% mutate (EDUCATION = "N/A")
+  
+  #------------------------------------------#
+  #            Create DIVISION               # 
+  #------------------------------------------#
+  df <- df %>% mutate(DIVISION=fDivision(INDICATOR))
+  
+  #------------------------------------------#
+  #             MULTIPLIER                   #        
+  # 1 is neutral, -1 is interpreted negative #
+  #------------------------------------------#
+  df<-df %>% mutate (MULTIPLIER = ifelse(grepl ('outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea',INDICATOR), -1, 1) %>% as.character())
   
   return(df)
 }
