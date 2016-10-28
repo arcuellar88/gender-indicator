@@ -1,10 +1,17 @@
-
+#' Function to compute the normalization of the value of the indicators by year in R.
+#' @param d dataset to normalize (it should include the INDICATOR column)
+#' @return d with an additional column called SCORE 
+#' @examples
+#' computeScores(df)
 computeScores <- function(d) {
   
+  #Get the names of the indicators
   indicator_names <- unique(d$indicator)
   
+  #create empty column scores
   d$score <- NA
   
+  #iterate over the indicator name and normalize (scale) by year
   for(name in indicator_names){
     
     sel.indicator <- which(d$indicator %in% name)
@@ -25,8 +32,12 @@ computeScores <- function(d) {
   return(d)
 }
 
-#con <- idaConnect("BLUDB", "", "")
-
+#
+#' Function to compute the normalization of the value of the indicators by year in DashDB.
+#' @param con connection to dashdb (con <- idaConnect("BLUDB", "", "")
+#' @return the results are computed directly in DashDB
+#' @examples
+#' computeScores(con)
 computeScoresDashDB() <-function(con) {
   
   #Initialize connection
@@ -56,7 +67,3 @@ computeScoresDashDB() <-function(con) {
            ON  ind.INDICATOR_ID= indY.INDICATOR_ID
            AND ind.YEAR= indY.YEAR",as.is=F) 
 }
-
-
-
-
