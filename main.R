@@ -15,7 +15,6 @@
 #                                          #
 #                                          #
 ############################################
-
 library(RSocrata)
 library(wbstats)
 library(WDI)
@@ -58,103 +57,119 @@ source("sources/Socrata.R")
 source("sources/WB.R")
 source("sources/NCD.R")
 
+processinDB <- function()
+{
+  library(ibmdbR)
+  #################################
+  # Load and Harmonize Datasets   #
+  #################################
+  
+  #TODO Migrate ETL_SRC.sql into R
+  #sqlUpdate(con, mDataC, "METADATA_INDICATOR", fast = TRUE)
+}
 
-#################################
-# Load and Harmonize Datasets   #
-#################################
+processinFile <- function(useBackup=TRUE)
+{
+  
+  #################################
+  # Load and Harmonize Datasets   #
+  #################################
+  
+  idb <- load.IDBData(IDB_OUTPUT_FILENAME, useBackup=TRUE)
+  wbi <- load.WBIData(WBI_OUTPUT_FILENAME, useBackup=TRUE)
+  ncd <- load.NCData(NCD_OUTPUT_FILENAME)
+  
+  #################################
+  # Concatenate the datasets      #
+  #################################
+  
+  data <- bind_rows(idb, wbi, ncd)
+  
+  #remove the temporary tables
+  rm(idb)
+  rm(wbi)
+  rm(ncd)
+  
+  #################################
+  # Look for duplicate indicators #
+  #################################
+  ## 
+  #cnt <- count(data, indicator,country,year,source) #count possible repetitions
+  #dups <- cnt[cnt$n > 1,] #select those that are repeated
+  # save the list of duplicated to a file for future inspection
+  # write.table(dups, file="log_dups.csv", sep="\t", quote=TRUE, row.names=FALSE)
+  ##
+  #... data <- count(data, indicator,country,year,value,source,sourceYear,isRegion)
+  # data <- data[,-n]
+  
+  
+  #################################
+  # Summarize Values   (mean)     #
+  #  (For regions)                #
+  #  (For all years)              #
+  #################################
+  
+  #aggregate all years of each distinct country
+  attach(data)
+  data.agg.years <- aggregate(data, by=list(ind=indicator,cty=country,s=source), FUN=mean, na.rm=TRUE) %>%
+    select(-indicator, -country, -source) 
+  detach(data)
+  #adjust column names
+  names(data.agg.years) <- c("indicator", "country", "source", "year", "value", "sourceYear", "isRegion")
+  #set year value to "all"
+  data.agg.years$year <- "all"
+  
+  #append to the data
+  data <- bind_rows(data, data.agg.years)
+  #delete temporary data
+  rm(data.agg.years)
+  
+  
+  #################################
+  # Normalize Values (Std. Score) #
+  #################################
+  # The normalization method used #
+  # is the standard scores. The   #
+  # resulting scores represent    #
+  # how many standard deviations  #
+  # the data point is distant     #
+  # from the average.             #
+  #################################
+  
+  source("normalizer.R")
+  data <- computeScores(data)
+  
+  #################################
+  # Classify Indicators           #
+  #################################
+  source("classifier.R")
+  data <- classify(data)
+  
+  #################################
+  #  Adjust multiplier
+  # ---> should this be run by normalizer or classifier?
+  
+  data <-
+    data %>%
+    mutate(score_corrected = score * multiplier)
+  #################################
+  
+  
+  #################################
+  # Output results to file        #
+  #################################
+  setwd(OUTPUT_FOLDER)
+  write.table(data, file=MAIN_OUTPUT_FILENAME, sep=";", quote=TRUE, row.names=FALSE)
+  
+  total_indicators <- length(unique(data$indicator))
+  paste("Algorithm finished processing...", total_indicators, "indicators and", length(data$indicator), "rows of data")
+  paste("Results were written to CSV file:", MAIN_OUTPUT_FILENAME, "on folder", OUTPUT_FOLDER)
+}
 
-idb <- load.IDBData(IDB_OUTPUT_FILENAME, useBackup=TRUE)
-wbi <- load.WBIData(WBI_OUTPUT_FILENAME, useBackup=TRUE)
-ncd <- load.NCData(NCD_OUTPUT_FILENAME)
-
-#################################
-# Concatenate the datasets      #
-#################################
-
-data <- bind_rows(idb, wbi, ncd)
-
-#remove the temporary tables
-rm(idb)
-rm(wbi)
-rm(ncd)
-
-#################################
-# Look for duplicate indicators #
-#################################
-## 
-#cnt <- count(data, indicator,country,year,source) #count possible repetitions
-#dups <- cnt[cnt$n > 1,] #select those that are repeated
-# save the list of duplicated to a file for future inspection
-# write.table(dups, file="log_dups.csv", sep="\t", quote=TRUE, row.names=FALSE)
-##
-#... data <- count(data, indicator,country,year,value,source,sourceYear,isRegion)
-# data <- data[,-n]
 
 
-
-
-
-#################################
-# Summarize Values   (mean)     #
-#  (For regions)                #
-#  (For all years)              #
-#################################
-
-#aggregate all years of each distinct country
-attach(data)
-data.agg.years <- aggregate(data, by=list(ind=indicator,cty=country,s=source), FUN=mean, na.rm=TRUE) %>%
-                  select(-indicator, -country, -source) 
-detach(data)
-#adjust column names
-names(data.agg.years) <- c("indicator", "country", "source", "year", "value", "sourceYear", "isRegion")
-#set year value to "all"
-data.agg.years$year <- "all"
-
-#append to the data
-data <- bind_rows(data, data.agg.years)
-#delete temporary data
-rm(data.agg.years)
-
-
-
-
-#################################
-# Normalize Values (Std. Score) #
-#################################
-# The normalization method used #
-# is the standard scores. The   #
-# resulting scores represent    #
-# how many standard deviations  #
-# the data point is distant     #
-# from the average.             #
-#################################
-
-source("normalizer.R")
-data <- computeScores(data)
-
-#################################
-# Classify Indicators           #
-#################################
-source("classifier.R")
-data <- classify(data)
-
-#################################
-#  Adjust multiplier
-# ---> should this be run by normalizer or classifier?
-
-data <-
-  data %>%
-  mutate(score_corrected = score * multiplier)
-#################################
-
-
-#################################
-# Output results to file        #
-#################################
-setwd(OUTPUT_FOLDER)
-write.table(data, file=MAIN_OUTPUT_FILENAME, sep=";", quote=TRUE, row.names=FALSE)
-
-total_indicators <- length(unique(data$indicator))
-paste("Algorithm finished processing...", total_indicators, "indicators and", length(data$indicator), "rows of data")
-paste("Results were written to CSV file:", MAIN_OUTPUT_FILENAME, "on folder", OUTPUT_FOLDER)
+# con <- idaConnect("DASHDB","","")
+# idaInit(con)
+# mData <- idaQuery("SELECT * FROM DASH6851.METADATA_INDICATOR",as.is=F)
+# mDataC <- classify(mData)
 
