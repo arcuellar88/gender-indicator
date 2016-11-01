@@ -1,8 +1,8 @@
 
 #con <- idaConnect("BLUDB","","")
 #idaInit(con)
-#Load the lists with terms by division
-#division<-read.csv("./data/terms.csv", header=TRUE)
+
+#
 
 
 #Create the funcion to identify the divisions based on the terms and the name of the indicator
@@ -26,7 +26,7 @@ fDivision<-function(indicator){
 #------------------------------------------#
 classify <- function(df) {
   
-  division <- idaQuery("SELECT * FROM DASH6851.TERMS",as.is=F)
+  #division<-read.csv("./data/terms.csv", header=TRUE)
   
   #Create list of divisions
   div<-unique(division$DIVISION)
@@ -68,5 +68,50 @@ classify <- function(df) {
   df<-df %>% mutate (MULTIPLIER = ifelse(grepl ('outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea',INDICATOR), -1, 1) %>% as.integer())
   
   return(df)
+}
+
+classifyDashDB <- function(con)
+{
+ 
+  idaInit(con)
+  #Load the lists with terms by division
+  division <- idaQuery("SELECT * FROM DASH6851.TERMS",as.is=F)
+  
+  #Gender
+  
+  idaQuery("update METADATA_INDICATOR 
+  set GENDER='female'
+  where Lower(indicator) like '% female'",as.is=F)
+  
+  idaQuery("update METADATA_INDICATOR 
+  set GENDER='male'
+  where GENDER is null and Lower(indicator) like '% male'",as.is=F)
+  
+  idaQuery("update METADATA_INDICATOR 
+  set GENDER='total'
+  where GENDER is null and Lower(indicator) like '% total'",as.is=F)
+  
+  
+  #Area
+  idaQuery("update METADATA_INDICATOR 
+  set AREA='rural'
+  where Lower(indicator) like '% rural'",as.is=F)
+  
+  idaQuery("update METADATA_INDICATOR 
+  set AREA='urban'
+  where AREA is null and Lower(indicator) like '% urban'",as.is=F)
+  
+  idaQuery("update METADATA_INDICATOR 
+  set AREA='total'
+  where AREA is null and Lower(indicator) like '% total'",as.is=F)
+  
+  # Load the metadata table from dashdb
+  mData <- idaQuery("SELECT * FROM DASH6851.METADATA_INDICATOR",as.is=F)
+  
+  #classify metadata
+  mDataC <- classify(mData)
+  
+  sqlUpdate(con, mDataC, "METADATA_INDICATOR", fast = TRUE)
+      
 }
 

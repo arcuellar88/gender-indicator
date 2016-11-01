@@ -59,10 +59,56 @@ source("sources/NCD.R")
 
 processinDB <- function()
 {
+  
   library(ibmdbR)
+
   #################################
-  # Load and Harmonize Datasets   #
+  # Connect to DashDB             #
   #################################
+  con <- idaConnect("DASHDB","","")
+  
+  
+  #################################
+  # Load Datasets                 #
+  #################################
+  
+  
+  #################################
+  # Harmonize Datasets            #
+  #################################
+  source("harmonize.R")
+  harmonizeDashDB(con)
+  
+  #################################
+  # Normalize Values (Std. Score) #
+  #################################
+  # The normalization method used #
+  # is the standard scores. The   #
+  # resulting scores represent    #
+  # how many standard deviations  #
+  # the data point is distant     #
+  # from the average.             #
+  #################################
+  
+  source("normalizer.R")
+  computeScoresDashDB(con)
+  
+  
+  
+  #################################
+  # Classify Indicators           #
+  #################################
+  source("classifier.R")
+  classifyDashDB(con)
+  
+  
+  #################################
+  # Export final dataset          #
+  #################################
+  
+  source("exportData.R")
+
+  # mDataC <- classify(mData)
   
   #TODO Migrate ETL_SRC.sql into R
   #sqlUpdate(con, mDataC, "METADATA_INDICATOR", fast = TRUE)
@@ -168,8 +214,5 @@ processinFile <- function(useBackup=TRUE)
 
 
 
-# con <- idaConnect("DASHDB","","")
-# idaInit(con)
-# mData <- idaQuery("SELECT * FROM DASH6851.METADATA_INDICATOR",as.is=F)
-# mDataC <- classify(mData)
+
 
