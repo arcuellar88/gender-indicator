@@ -1,4 +1,4 @@
-
+--Compute standard deviation and mean per year and indicator
 truncate table INDICATOR_BY_YEAR immediate;
 insert into INDICATOR_BY_YEAR
             select INDICATOR_ID, YEAR, AVG(VALUE), STDDEV(VALUE), count(*) as total
@@ -10,8 +10,10 @@ UPDATE INDICATOR_BY_YEAR
 SET STDDEV=1 
 WHERE STDDEV=0;
 
+-----------------------------------------------------------
+--SRC_INDICATOR 
+-----------------------------------------------------------
 truncate table SRC_INDICATOR immediate;
-
 insert into SRC_INDICATOR 
 select 
 ind.ISO3,
