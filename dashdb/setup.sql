@@ -1,3 +1,5 @@
+--Set up IDB_COUNTRY
+
 truncate table IDB_COUNTRY immediate;
 --East Asia & Pacific (developing only)	4E
 Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, COUNTRY,REGION) values ('4E','R4E','4E','East Asia & Pacific (developing only)','yes') ;
