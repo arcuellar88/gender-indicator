@@ -10,6 +10,7 @@ truncate table NCD_SRC_METADATA_INDICATOR IMMEDIATE;
 insert into NCD_SRC_METADATA_INDICATOR
 select * from NCD_STG_METADATA_INDICATOR
 where source not like '%World%Bank%' and source not like '%Global%Findex%';
+
 ------------------------------------------------------------
 
 -- WB_SRC_METADATA_INDICATOR
@@ -33,6 +34,7 @@ select * from N4D_STG_METADATA_INDICATOR;
 -- METADATA_INDICATOR
 -----------------------------------------------------------
 TRUNCATE table SRC_METADATA_INDICATOR IMMEDIATE;
+ALTER TABLE SRC_METADATA_INDICATOR ALTER COLUMN INDICATOR_ID RESTART WITH 1;
 
 -- NDC
 INSERT INTO SRC_METADATA_INDICATOR (SOURCE_ID, SOURCE, SOURCE_GROUP, TOPIC, INDICATOR, PRIMARY, UOM, INDICATOR_DESC)
@@ -104,7 +106,8 @@ NCD_SRC_INDICATOR ncd left join
 SRC_METADATA_INDICATOR md
 on
 ncd.INDICATOR_ID=md.SOURCE_ID
-where source_group='NCD' and VALUE is not null;
+where source_group='NCD' and VALUE is not null
+and ncd.iso3 in (select ISO_CD3 from IDB_COUNTRY);
 
 --INSERT N4D-----------------------------------------
 INSERT INTO STG_INDICATOR
@@ -119,17 +122,26 @@ where source_group not in ('NCD', 'WB/Findex') and VALUE is not null;
 --Insert ALL REGIONS
 insert into STG_INDICATOR (ISO3, INDICATOR_ID, VALUE, YEAR)
 select reg.ISO_CD3, INDICATOR_ID, AVG(VALUE) as value, year 
-   from STG_INDICATOR JOIN idb_country con on ISO3=con.ISO_CD3 
-   join idb_country reg on con.IDB_REGION=reg.COUNTRY
+   from STG_INDICATOR 
+   JOIN idb_country con on ISO3=con.ISO_CD3 
+   JOIN idb_country reg on con.IDB_REGION=reg.COUNTRY
  where con.IDB_REGION not like '%Not IDB%' 
  group by reg.ISO_CD3, INDICATOR_ID, year;
+
+ -- IDB
+insert into STG_INDICATOR (ISO3, INDICATOR_ID, VALUE, YEAR)
+select 'IBA', INDICATOR_ID, AVG(VALUE) as value, year 
+   from STG_INDICATOR 
+   JOIN idb_country con on ISO3=con.ISO_CD3 
+ where con.IDB_REGION not like '%Not IDB%' 
+ group by INDICATOR_ID, year;
 
 
 --Insert ALL YEARS
 insert into STG_INDICATOR (ISO3, INDICATOR_ID, VALUE, YEAR)
 select ISO3, INDICATOR_ID, AVG(VALUE) as value, 'ALL' as year 
    from STG_INDICATOR JOIN idb_country on ISO3=ISO_CD3 
- where REGION='no'
+-- where REGION='no'
  group by ISO3, INDICATOR_ID;
  
 -----------------------------------------------------------

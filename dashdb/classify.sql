@@ -62,7 +62,7 @@ where TOPIC is null;
 --Multiplier
 update SRC_METADATA_INDICATOR
 set MULTIPLIER=-1
-WHERE REGEXP_LIKE(PRIMARY,'Year women obtained election|Press Freedom Index|VAW laws SIGI|Unmet need|unemployed|unemployment|Out of school|homicide|outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea|wife beating|working very long|DALYs|Forced first sex','i');
+WHERE REGEXP_LIKE(PRIMARY,'not good at math|helpless at math|Year women obtained election|Press Freedom Index|VAW laws SIGI|Unmet need|unemployed|unemployment|Out of school|homicide|outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea|wife beating|working very long|DALYs|Forced first sex','i');
 
 update SRC_METADATA_INDICATOR
 set MULTIPLIER=1
@@ -71,15 +71,15 @@ WHERE MULTIPLIER IS NULL;
 --AREA
 update SRC_METADATA_INDICATOR 
 set AREA='rural'
-where Lower(indicator) like '% rural'
+where Lower(indicator) like '% rural';
 
 update SRC_METADATA_INDICATOR 
 set AREA='urban'
-where AREA is null and Lower(indicator) like '% urban'
+where AREA is null and Lower(indicator) like '% urban';
   
 update SRC_METADATA_INDICATOR 
 set AREA='total'
-where AREA is null and Lower(indicator) like '% total'
+where AREA is null and Lower(indicator) like '% total';
 
 update SRC_METADATA_INDICATOR 
 set AREA='other'

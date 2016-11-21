@@ -2,29 +2,29 @@
 
 truncate table IDB_COUNTRY immediate;
 --East Asia & Pacific (developing only)	4E
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, COUNTRY,REGION) values ('4E','R4E','4E','East Asia & Pacific (developing only)','yes') ;
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, COUNTRY,REGION) values ('4E','EAP','4E','East Asia & Pacific (developing only)','yes') ;
 --Europe & Central Asia (developing only)	7E
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('7E','R7E','7E','Europe & Central Asia (developing only)','Europe & Central Asia (developing only)','yes') ;
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('7E','ECA','7E','Europe & Central Asia (developing only)','Europe & Central Asia (developing only)','yes') ;
 --Latin America & Caribbean (developing only)	XJ
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2,ENGL_NM, COUNTRY,REGION) values ('XJ','RXJ','XJ','Latin America & Caribbean (developing only)','Latin America & Caribbean (developing only)','yes') ;
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2,ENGL_NM, COUNTRY,REGION) values ('XJ','LAC','XJ','Latin America & Caribbean (developing only)','Latin America & Caribbean (developing only)','yes') ;
 --Middle East (Developing only)	M1
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2,ENGL_NM, COUNTRY,REGION) values ('M1','RM1','M1','Middle East (Developing only)','Middle East (Developing only)','yes') ;
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2,ENGL_NM, COUNTRY,REGION) values ('M1','MNA','M1','Middle East (Developing only)','Middle East (Developing only)','yes') ;
 --Sub-Saharan Africa (developing only)	ZF
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2,ENGL_NM, COUNTRY,REGION) values ('ZF','RZF','ZF','Sub-Saharan Africa (developing only)','Sub-Saharan Africa (developing only)','yes') ;
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2,ENGL_NM, COUNTRY,REGION) values ('ZF','SSA','ZF','Sub-Saharan Africa (developing only)','Sub-Saharan Africa (developing only)','yes') ;
 --World	1W
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('1W','R1W','1W','World','World','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('1W','WLD','1W','World','World','yes');
 
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XR','RXR','XR','High income: nonOECD','High income: nonOECD','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XR','NOC','XR','High income: nonOECD','High income: nonOECD','yes');
 Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('KV','RKV','KV','Kosovo','Kosovo','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XC','RXC','XC','Euro area','Euro area','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XT','RXT','XT','Upper middle income','Upper middle income','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XN','RXN','XN','Lower middle income','Lower middle income','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XS','RXS','XS','High income: OECD','High income: OECD','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('8S','R8S','8S','South Asia','South Asia','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XO','RXO','XO','Low & middle income','Low & middle income','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XD','RXD','XD','High income','High income','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XP','RXP','XP','Middle income','Middle income','yes');
-Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XM','RXM','XM','Low income','Low income','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XC','EMU','XC','Euro area','Euro area','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XT','UMC','XT','Upper middle income','Upper middle income','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XN','LMC','XN','Lower middle income','Lower middle income','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XS','OEC','XS','High income: OECD','High income: OECD','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('8S','SAS','8S','South Asia','South Asia','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XO','LMY','XO','Low & middle income','Low & middle income','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XD','HIC','XD','High income','High income','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XP','MIC','XP','Middle income','Middle income','yes');
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('XM','LIC','XM','Low income','Low income','yes');
 
 
 Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('11','IB1','11','Southern Cone (CSC)','Southern Cone (CSC)','yes');
@@ -34,7 +34,8 @@ Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) value
 Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('15','IB5','15','Haiti (CDH)','Haiti (CDH)','yes');
 Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('16','IB6','16','Not IDB','Not IDB','yes');
 
-
+'ALL IDB COUNTRIES'
+Insert into idb_country (IDB_CD, ISO_CD3,ISO_CD2, ENGL_NM, COUNTRY,REGION) values ('17','IBA','17','IDB','IDB','yes');
 
 update idb_country set REGION='no' where REGION <>'yes';
 

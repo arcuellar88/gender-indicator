@@ -11,7 +11,6 @@
 #        Alejandro Rodriguez               #
 #                                          #
 ############################################
-
 library(RSocrata)
 library(wbstats)
 library(WDI)
@@ -43,12 +42,13 @@ library(countrycode)
 #################################
 # SET UP Algorithm Parameters   #
 #################################
-source("config.R")
+source("./R/config.R")
 
 #################################
 # Load harmonization functions  #
 #################################
 #source("test/IDB.R")
+
 source("sources/Socrata.R")
 source("sources/WB.R")
 source("sources/NCD.R")
@@ -75,7 +75,6 @@ processinDB <- function()
   #################################
   connectDB()
   
-  
   #################################
   # Load Datasets                 #
   #################################
@@ -99,12 +98,10 @@ processinDB <- function()
   #################################
   computeScoresDashDB(con)
   
-  
   #################################
   # Classify Indicators           #
   #################################
   classifyDashDB(con)
-  
   
   #################################
   # Export final dataset          #
