@@ -92,47 +92,48 @@ classifyDashDB <- function(con)
   #division <- idaQuery("SELECT * FROM DASH6851.TERMS",as.is=F)
   
   #GENDER
+  try(idaQuery("update SRC_METADATA_INDICATOR 
+    set GENDER='Female'
+    where (Lower(indicator) like '% girls %' 
+    or Lower(indicator) like '% female%'
+    or Lower(indicator) like 'female%'
+    or Lower(indicator) like '% women%' 
+    or Lower(indicator) like 'women %');",as.is=F))
   
   try(idaQuery("update SRC_METADATA_INDICATOR 
-  set GENDER='female'
-  where (Lower(indicator) like '% female' or Lower(indicator) like '% women in%')",as.is=F))
-  
-  try(idaQuery("update SRC_METADATA_INDICATOR 
-  set GENDER='male'
-  where (GENDER is null or GENDER='other') and (Lower(indicator) like '% male' or Lower(indicator) like '% men in%')",as.is=F))
-  
-  try(idaQuery("update SRC_METADATA_INDICATOR 
-  set GENDER='total'
-  where (GENDER is null or GENDER='other') and Lower(indicator) like '% total'",as.is=F))
+    set GENDER='Male'
+    where (GENDER is null or GENDER='other') 
+    and (Lower(indicator) like '% male%' or Lower(indicator) like '% men%)",as.is=F))
   
   
   #AREA
+  try(idaQuery("update SRC_METADATA_INDICATOR 
+  set AREA='Rural'
+  where Lower(indicator) like '% rural%'",as.is=F))
   
   try(idaQuery("update SRC_METADATA_INDICATOR 
-  set AREA='rural'
-  where Lower(indicator) like '% rural'",as.is=F))
+  set AREA='Urban'
+  where AREA is null and Lower(indicator) like '% urban%'",as.is=F))
   
   try(idaQuery("update SRC_METADATA_INDICATOR 
-  set AREA='urban'
-  where AREA is null and Lower(indicator) like '% urban'",as.is=F))
+                set AREA='Total'
+                where AREA is null and Lower(indicator) like '% total%'",as.is=F))
   
   try(idaQuery("update SRC_METADATA_INDICATOR 
-  set AREA='total'
-  where AREA is null and Lower(indicator) like '% total'",as.is=F))
-  
+                set AREA='Other'
+                where AREA is null")
+                
   #MULTIPLIER
-  
   try(idaQuery("update SRC_METADATA_INDICATOR
-  set MULTIPLIER=-1
-  WHERE 
-  REGEXP_LIKE(PRIMARY,'Year women obtained election|Press Freedom Index|VAW laws SIGI|Unmet need|unemployed|unemployment|Out of school|homicide|outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea|wife beating|working very long|DALYs|Forced first sex','i')",as.is=F))
+      set MULTIPLIER=-1
+      WHERE 
+      REGEXP_LIKE(PRIMARY,'Year women obtained election|Press Freedom Index|VAW laws SIGI|Unmet need|unemployed|unemployment|Out of school|homicide|outstanding|informal|death|mort|drop|HIV|viol|disor| vulnerable| fertility|unimpro|disea|wife beating|working very long|DALYs|Forced first sex','i')",as.is=F))
   
   try(idaQuery("update SRC_METADATA_INDICATOR
   set MULTIPLIER=1
   WHERE MULTIPLIER IS NULL",as.is=F))
   
   #DIVISION
-  
   try(idaQuery("update SRC_METADATA_INDICATOR m
   set DIVISION=(SELECT cast(listagg(DIVISION, ', ') as varchar(100)) FROM TERMS_DIV WHERE REGEXP_LIKE( Lower(m.PRIMARY),terms,'i'))
   where DIVISION IS NULL;
@@ -170,6 +171,8 @@ classifyDashDB <- function(con)
       or INDICATOR like '%Sent%remittances%'
       or INDICATOR like '%Used an account%'
       or INDICATOR like '%mortgage%'
-      )"))      
+      )"))   
+  
+    try(idaQuery("update SRC_METADATA_INDICATOR set TOPIC='Other' where TOPIC is null"))
 }
 

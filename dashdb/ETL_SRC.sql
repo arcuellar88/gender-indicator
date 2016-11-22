@@ -9,7 +9,12 @@ truncate table NCD_SRC_METADATA_INDICATOR IMMEDIATE;
 
 insert into NCD_SRC_METADATA_INDICATOR
 select * from NCD_STG_METADATA_INDICATOR
-where source not like '%World%Bank%' and source not like '%Global%Findex%';
+where source not like '%World%Bank%' and source not like '%Global%Findex%'
+and (Lower(NAME) like '% girls %' 
+ or Lower(NAME) like '% female%'
+ or Lower(NAME) like 'female%'
+ or Lower(NAME) like '% women%' 
+ or Lower(NAME) like 'women %');
 
 ------------------------------------------------------------
 
@@ -38,17 +43,19 @@ ALTER TABLE SRC_METADATA_INDICATOR ALTER COLUMN INDICATOR_ID RESTART WITH 1;
 
 -- NDC
 INSERT INTO SRC_METADATA_INDICATOR (SOURCE_ID, SOURCE, SOURCE_GROUP, TOPIC, INDICATOR, PRIMARY, UOM, INDICATOR_DESC)
-SELECT  INDICATOR_ID,  SOURCE, 'NCD', TOPIC, INDICATOR, TRIM(CONCAT(PRIMARY,CONCAT(' ', COALESCE(SECONDARY,'')))), UOM, INDICATOR_DESC
+SELECT  INDICATOR_ID,  SOURCE, 'NCD', TOPIC, INDICATOR, 
+Replace(Lower(Replace(Lower(INDICATOR),'female','')),'male',''), UOM, INDICATOR_DESC
 FROM NCD_SRC_METADATA_INDICATOR;
 
 -- WB
 INSERT INTO SRC_METADATA_INDICATOR (SOURCE_ID, SOURCE,SOURCE_GROUP, INDICATOR, PRIMARY, INDICATOR_DESC)
-SELECT  f.INDICATOR_ID,SOURCE_ORG,'WB/Findex', f."INDICATOR",substr(f."INDICATOR",1,locate(',',f."INDICATOR")-1) as PRIMARY, f.INDICATOR_DESC
+SELECT  f.INDICATOR_ID,SOURCE_ORG,'WB/Findex', f.INDICATOR, 
+Replace(Lower(Replace(Lower(F.INDICATOR),'female','')),'male','') as PRIMARY, f.INDICATOR_DESC
 FROM WB_SRC_METADATA_INDICATOR f;
 
 -- N4D
 INSERT INTO SRC_METADATA_INDICATOR (SOURCE_ID, INDICATOR, INDICATOR_DESC, GENDER,QUINTIL, AREA, AGE, EDUCATION, TOPIC, SOURCE,PRIMARY, SOURCE_GROUP)
-select *, substr(INDICATOR,1,locate(',',INDICATOR)-1), 'Inter-American Development Bank (IDB)'
+select *, Replace(Lower(Replace(Lower(INDICATOR),'female','')),'male',''), 'Inter-American Development Bank (IDB)'
  from N4D_SRC_METADATA_INDICATOR;
  
  
@@ -86,6 +93,18 @@ select * from N4D_STG_INDICATOR;
 -- STG_INDICATOR------------------------------------
 TRUNCATE STG_INDICATOR IMMEDIATE;
 
+--INSERT NCD-----------------------------------------
+INSERT INTO STG_INDICATOR
+select  ncd.ISO3 , md.INDICATOR_ID, ncd.year, ncd.value
+from
+NCD_SRC_INDICATOR ncd left join 
+SRC_METADATA_INDICATOR md
+on
+ncd.INDICATOR_ID=md.SOURCE_ID
+where source_group='NCD' and VALUE is not null
+and ncd.iso3 in (select ISO_CD3 from IDB_COUNTRY);
+
+
 --INSERT WB-----------------------------------------
 INSERT INTO STG_INDICATOR
 select  co.ISO_CD3 , md.INDICATOR_ID, wb.year, wb.value
@@ -98,16 +117,6 @@ left join IDB_COUNTRY co
 on wb.iso2=co.iso_cd2
 where source_group='WB/Findex' and VALUE is not null;
 
---INSERT NCD-----------------------------------------
-INSERT INTO STG_INDICATOR
-select  ncd.ISO3 , md.INDICATOR_ID, ncd.year, ncd.value
-from
-NCD_SRC_INDICATOR ncd left join 
-SRC_METADATA_INDICATOR md
-on
-ncd.INDICATOR_ID=md.SOURCE_ID
-where source_group='NCD' and VALUE is not null
-and ncd.iso3 in (select ISO_CD3 from IDB_COUNTRY);
 
 --INSERT N4D-----------------------------------------
 INSERT INTO STG_INDICATOR
