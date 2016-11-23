@@ -1,5 +1,3 @@
-
-
 -----------------------------------------------------------
 -- SRC METADATA_INDICATOR
 -----------------------------------------------------------
@@ -14,7 +12,11 @@ and (Lower(NAME) like '% girls %'
  or Lower(NAME) like '% female%'
  or Lower(NAME) like 'female%'
  or Lower(NAME) like '% women%' 
- or Lower(NAME) like 'women %');
+ or Lower(NAME) like 'women %'
+ or Lower(NAME) like '%gender%'
+ or Lower(NAME) like  'vaw laws %'
+ or Lower(NAME) like  '%male %'
+ or Lower(NAME) like  '% male%');
 
 ------------------------------------------------------------
 
@@ -26,13 +28,11 @@ select * from WB_STG_METADATA_INDICATOR;
 ------------------------------------------------------------
 
 -- N4D METADATA_INDICATOR
---update N4D_STG_METADATA_INDICATOR
---set GENDER = Lower(GENDER), QUINTILE=Lower(QUINTILE), AREA=LOWER(AREA), AGE=LOWER(AGE), EDUCATION=LOWER(EDUCATION);
-
 truncate table N4D_SRC_METADATA_INDICATOR IMMEDIATE;
 
 insert into N4D_SRC_METADATA_INDICATOR
-select * from N4D_STG_METADATA_INDICATOR;
+select n4d."IndicatorCode", n4d."IndicatorName", n4d."IndicatorShortDef", n4d."SubTopicName", n4d."DataSetName"
+from N4D_STG_METADATA_INDICATOR n4d;
 ------------------------------------------------------------
 
 -----------------------------------------------------------
@@ -54,7 +54,7 @@ Replace(Lower(Replace(Lower(F.INDICATOR),'female','')),'male','') as PRIMARY, f.
 FROM WB_SRC_METADATA_INDICATOR f;
 
 -- N4D
-INSERT INTO SRC_METADATA_INDICATOR (SOURCE_ID, INDICATOR, INDICATOR_DESC, GENDER,QUINTIL, AREA, AGE, EDUCATION, TOPIC, SOURCE,PRIMARY, SOURCE_GROUP)
+INSERT INTO SRC_METADATA_INDICATOR (SOURCE_ID, INDICATOR, INDICATOR_DESC, TOPIC, SOURCE,PRIMARY, SOURCE_GROUP)
 select *, Replace(Lower(Replace(Lower(INDICATOR),'female','')),'male',''), 'Inter-American Development Bank (IDB)'
  from N4D_SRC_METADATA_INDICATOR;
  
@@ -162,9 +162,9 @@ select ISO3, INDICATOR_ID, AVG(VALUE) as value, 'ALL' as year
 -- Generate Reportin Table 
 -----------------------------------------------------------
 TRUNCATE TABLE GENDER_INDICATOR IMMEDIATE;
-INSERT INTO GENDER_INDICATOR
-SELECT INDICATOR, PRIMARY, UOM, YEAR,ISO3, COUNTRY,REGION, IDB_REGION,SOURCE,SOURCE_GROUP, TOPIC, GENDER, AREA,AGE, QUINTIL as QUINTILE, EDUCATION, DIVISION, MULTIPLIER, 
- VALUE, VALUE_NORMALIZED,VALUE_NORMALIZED*MULTIPLIER 
+INSERT INTO GENDER_INDICATOR 
+SELECT INDICATOR_ID,INDICATOR, PRIMARY, UOM, YEAR,ISO3, COUNTRY,REGION, IDB_REGION,SOURCE,SOURCE_GROUP, TOPIC, GENDER, AREA,AGE, QUINTIL as QUINTILE, EDUCATION, DIVISION, MULTIPLIER, 
+ VALUE, NULL,NULL,NULL,VALUE_NORMALIZED,VALUE_NORMALIZED*MULTIPLIER 
 FROM SRC_INDICATOR JOIN SRC_METADATA_INDICATOR using (INDICATOR_ID)
 left join idb_country on ISO3=ISO_CD3;
 

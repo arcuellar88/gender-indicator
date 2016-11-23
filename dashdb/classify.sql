@@ -9,7 +9,9 @@ where (Lower(indicator) like '% girls %'
  or Lower(indicator) like '% female%'
  or Lower(indicator) like 'female %'
  or Lower(indicator) like '% women%' 
- or Lower(indicator) like 'women %');
+ or Lower(indicator) like 'women %'
+ or Lower(indicator) like '%gender%'
+ or Lower(indicator) like  'vaw laws %');
  
 update SRC_METADATA_INDICATOR 
 set GENDER='Male'
@@ -29,7 +31,9 @@ update SRC_METADATA_INDICATOR
 set AREA='Total'
 where AREA is null and Lower(indicator) like '% total%';
 
-
+update SRC_METADATA_INDICATOR 
+set AREA='Other'
+where AREA is null;
 
  
  --Multiplier
