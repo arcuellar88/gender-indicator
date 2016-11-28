@@ -9,7 +9,6 @@ insert into INDICATOR_BY_YEAR
 UPDATE INDICATOR_BY_YEAR 
 SET STDDEV=1 
 WHERE STDDEV=0;
-
 -----------------------------------------------------------
 --SRC_INDICATOR 
 -----------------------------------------------------------

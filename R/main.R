@@ -42,26 +42,60 @@ library(countrycode)
 #################################
 # SET UP Algorithm Parameters   #
 #################################
-source("./R/config.R")
+source("R/config.R")
 
 #################################
 # Load harmonization functions  #
 #################################
 #source("test/IDB.R")
 
-source("sources/Socrata.R")
-source("sources/WB.R")
-source("sources/NCD.R")
-source("normalizer.R")
-source("classifier.R")
-source("exportData.R")
+source("R/sources/WB.R")
+source("R/sources/NCD.R")
+
+source("R/harmonize.R")
+source("R/normalizer.R")
+source("R/classifier.R")
+source("R/exportData.R")
+
 
 connectDB <- function()
 {
   library(ibmdbR)
-  con <<- idaConnect("DASHDB","","")
+  con <- idaConnect("DASHDB","","")
+  con
 }
 
+readSQLCommands <- function(file)
+{
+  #"/dashdb/classify.sql"
+  sqlcmds <- readLines(file)
+  sqlcmds <- sqlcmds[!grepl(pattern = "^\\s*--", x = sqlcmds)] # remove full-line comments
+  sqlcmds <- sub(pattern = "--.*", replacement="", x = sqlcmds) # remove midline comments
+  sqlcmds <- paste(sqlcmds, collapse=" ")
+  
+  sqlcmdlist<<-as.list(strsplit(sqlcmds, ";")[[1]])
+  
+  sqlcmdlist
+}
+
+runSQL<-function(sqlcmdlist,con)
+{
+  #idaInit(con)
+  #print(length(sqlcmdlist))
+  
+  for(i in 1:length(sqlcmdlist))
+  {
+    q<-trim(sqlcmdlist[[i]])
+    
+    if(q!="")
+    {
+      #print(paste0("index: ",i))
+      #print(q)
+      try(idaQuery(q))
+    }
+  }
+  
+}
 #' Orchestrator of the ETL process for the Gender Dashboard
 #' Load data into Dashdb, classify, normalize and generate the final GENDER_INDICATOR table in dashdb.
 #' @return 
@@ -70,10 +104,12 @@ connectDB <- function()
 processinDB <- function()
 {
   
+  start.time <- Sys.time()
   #################################
   # Connect to DashDB             #
   #################################
-  connectDB()
+  con<-connectDB()
+  idaInit(con)
   
   #################################
   # Load Datasets                 #
@@ -83,8 +119,23 @@ processinDB <- function()
   #################################
   # Harmonize Datasets            #
   #################################
-  source("harmonize.R")
-  harmonizeDashDB(con)
+  print("Start harmonize.R")
+  harmonizeDashDBFromFile(con)
+  print("End harmonize.R")
+  
+  end.time <- Sys.time()
+  print(end.time - start.time)
+  
+  #################################
+  # Classify Indicators           #
+  #################################
+  print("Start classify.R")
+  classifyDashDBFromFile(con)
+  print("End classify.R")
+  
+  end.time <- Sys.time()
+  print(end.time - start.time)
+  
   
   #################################
   # Normalize Values (Std. Score) #
@@ -96,17 +147,23 @@ processinDB <- function()
   # the data point is distant     #
   # from the average.             #
   #################################
-  computeScoresDashDB(con)
+  print("Start normalize.R")
+  computeScoresDashDBFromFile(con)
+  print("End normalize.R")
+  
+  end.time <- Sys.time()
+  print(end.time - start.time)
+  
   
   #################################
-  # Classify Indicators           #
+  # Export dataset incl. GAP      #
   #################################
-  classifyDashDB(con)
+  print("Start exportData.R")
+  exportData(con)
+  print("End exportData.R")
   
-  #################################
-  # Export final dataset          #
-  #################################
-  export(con)
+  end.time <- Sys.time()
+  print(end.time - start.time)
   
 }
 
@@ -223,8 +280,6 @@ updateTerms<-function()
             from TERMS group by DIVISION")
   
 }
-
-
 
 
 
