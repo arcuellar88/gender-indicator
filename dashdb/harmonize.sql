@@ -7,16 +7,21 @@ truncate table NCD_SRC_METADATA_INDICATOR IMMEDIATE;
 
 insert into NCD_SRC_METADATA_INDICATOR
 select * from NCD_STG_METADATA_INDICATOR
-where source not like '%World%Bank%' and source not like '%Global%Findex%'
-and (Lower(NAME) like '% girls %' 
+where (Lower(NAME) like '% girls %' 
  or Lower(NAME) like '% female%'
  or Lower(NAME) like 'female%'
  or Lower(NAME) like '% women%' 
- or Lower(NAME) like 'women %'
+ or Lower(NAME) like 'women%'
  or Lower(NAME) like '%gender%'
  or Lower(NAME) like  'vaw laws %'
  or Lower(NAME) like  '%male %'
- or Lower(NAME) like  '% male%');
+ or Lower(NAME) like  '% male%'
+ or Lower(NAME) like  '% maternity%'
+ or Lower(NAME) like  '% paternity%'
+ or Lower(NAME) like  '%domestic violence%'
+ or Lower(NAME) like '%sexual harassment%'
+ or Lower(NAME) like  '%mother%'
+ or NAME like '%GPI%');
 
 ------------------------------------------------------------
 
@@ -166,7 +171,3 @@ select ISO3, INDICATOR_ID, AVG(VALUE) as value, 'ALL' as year
 -- Normalization
 -----------------------------------------------------------
 -- see normalization.sql
-
-
-
-

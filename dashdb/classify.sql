@@ -9,14 +9,21 @@ where (Lower(indicator) like '% girls %'
  or Lower(indicator) like '% female%'
  or Lower(indicator) like 'female %'
  or Lower(indicator) like '% women%' 
- or Lower(indicator) like 'women %'
+ or Lower(indicator) like 'women%'
  or Lower(indicator) like '%gender%'
- or Lower(indicator) like  'vaw laws %');
+ or Lower(indicator) like  'vaw laws %'
+ or Lower(indicator) like  '% maternity%'
+ or indicator like '%GPI%'
+ or Lower(indicator) like  '%domestic violence%'
+ or Lower(indicator) like  '%mother%'
+ or Lower(indicator) like '%sexual harassment%');
  
 update SRC_METADATA_INDICATOR 
 set GENDER='Male'
 where (GENDER is null or GENDER='other') 
-and (Lower(indicator) like '% male%' or Lower(indicator) like '% men in%');
+and (Lower(indicator) like '% male%' 
+or Lower(indicator) like '% men in%'
+or Lower(indicator) like '%paternity%');
 
  --AREA
 update SRC_METADATA_INDICATOR 
@@ -46,9 +53,29 @@ set MULTIPLIER=1
 WHERE MULTIPLIER IS NULL;
 
 --Division
-update SRC_METADATA_INDICATOR m
-set DIVISION=(SELECT cast(listagg(DIVISION, ', ') as varchar(100)) FROM TERMS_DIV WHERE REGEXP_LIKE( Lower(m.PRIMARY),terms,'i'))
-where DIVISION IS NULL;
+truncate DIVISION_INDICATOR IMMEDIATE;
+
+--Manual classification
+insert into DIVISION_INDICATOR
+select source_id,idiv.DIVISION from SRC_METADATA_INDICATOR smi join
+INE_DIVISION idiv on
+smi.INDICATOR=idiv.INDICATOR;
+
+--Auto-classification
+insert into DIVISION_INDICATOR
+SELECT SOURCE_ID, terms.DIVISION 
+FROM TERMS terms, SRC_METADATA_INDICATOR meta
+WHERE Lower(meta.PRIMARY) like concat(concat('%',TERM),'%')
+and terms.DIVISION not in ('WSA','TSP','ENE')
+GROUP BY SOURCE_ID, terms.DIVISION ;
+
+--Update DIVISION in SRC_METADATA_INDICATOR
+MERGE INTO SRC_METADATA_INDICATOR AS meta
+  USING (SELECT SOURCE_ID, listagg(DIVISION, ', ') as DIVISIONS from DIVISION_INDICATOR group by SOURCE_ID) AS div
+  ON meta.SOURCE_ID=div.SOURCE_ID
+  WHEN MATCHED THEN
+     UPDATE SET
+        DIVISION = DIVISIONS;
 
 --Topic
 update SRC_METADATA_INDICATOR

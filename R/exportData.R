@@ -34,7 +34,7 @@ exportData<-function(con, socrata=FALSE)
   #################################
   # Output results to file        #
   #################################
-  setwd(OUTPUT_FOLDER)
+  #setwd(OUTPUT_FOLDER)
   write.table(df, file=MAIN_OUTPUT_FILENAME, sep=",", quote=TRUE, row.names=FALSE)
   
 }
