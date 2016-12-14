@@ -11,9 +11,9 @@
   * Alejandro Rodriguez               
 
 ## Sources:
-  * IDB Numbers for development (N4D) https://data.iadb.org/
+  * IDB Numbers for development (N4D) https://data.iadb.org/ via https://github.com/arcuellar88/iadbstats
   * World Bank Findex (WB) http://data.worldbank.org/data-catalog/financial_inclusion
-  * No Ceilings Data (NCD)
+  * No Ceilings Data (NCD) https://github.com/fathominfo/noceilings-data
   * Open data portal IDB (Socrata) https://mydata.iadb.org/
 
 ## R libraries and packages:
@@ -24,7 +24,6 @@
   * WID
   * RSocrata
   
-
 #Instructions for Socrata
  * Define local R file config.R with
  * source("config.R")
