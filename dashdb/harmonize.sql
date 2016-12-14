@@ -7,22 +7,21 @@ truncate table NCD_SRC_METADATA_INDICATOR IMMEDIATE;
 
 insert into NCD_SRC_METADATA_INDICATOR
 select * from NCD_STG_METADATA_INDICATOR
-where (Lower(NAME) like '% girls %' 
- or Lower(NAME) like '% female%'
- or Lower(NAME) like 'female%'
- or Lower(NAME) like '% women%' 
- or Lower(NAME) like 'women%'
- or Lower(NAME) like '%gender%'
- or Lower(NAME) like  'vaw laws %'
- or Lower(NAME) like  '%male %'
- or Lower(NAME) like  '% male%'
- or Lower(NAME) like  '% maternity%'
- or Lower(NAME) like  '% paternity%'
- or Lower(NAME) like  '%domestic violence%'
- or Lower(NAME) like '%sexual harassment%'
- or Lower(NAME) like  '%mother%'
- or NAME like '%GPI%');
-
+where (Lower("name") like '% girls %' 
+ or Lower("name") like '% female%'
+ or Lower("name") like 'female%'
+ or Lower("name") like '% women%' 
+ or Lower("name") like 'women%'
+ or Lower("name") like '%gender%'
+ or Lower("name") like  'vaw laws %'
+ or Lower("name") like  '%male %'
+ or Lower("name") like  '% male%'
+ or Lower("name") like  '% maternity%'
+ or Lower("name") like  '% paternity%'
+ or Lower("name") like  '%domestic violence%'
+ or Lower("name") like '%sexual harassment%'
+ or Lower("name") like  '%mother%'
+ or "name" like '%GPI%');
 ------------------------------------------------------------
 
 -- WB_SRC_METADATA_INDICATOR
@@ -77,15 +76,15 @@ select *, Replace(Lower(Replace(Lower(INDICATOR),'female','')),'male',''), 'Inte
 TRUNCATE TABLE NCD_SRC_INDICATOR IMMEDIATE;
 
 insert into NCD_SRC_INDICATOR
-select iso3,INDICATOR_ID,YEAR, value from NCD_STG_INDICATOR
-where INDICATOR_ID in (select INDICATOR_ID from NCD_SRC_METADATA_INDICATOR);
+select "iso","indicator_id","year", "value" from NCD_STG_INDICATOR
+where "indicator_id" in (select INDICATOR_ID from NCD_SRC_METADATA_INDICATOR);
 ---------------------------------------------------------
 
 -- WB_SRC_INDICATOR------------------------------------
 TRUNCATE TABLE WB_SRC_INDICATOR IMMEDIATE;
 
 insert into WB_SRC_INDICATOR
-select iso2,INDICATOR_ID,YEAR, value from WB_STG_INDICATOR;
+select "iso2","indicatorID","year", "value" from WB_STG_INDICATOR;
 ---------------------------------------------------------
 
 -- N4D_SRC_INDICATOR------------------------------------
@@ -99,7 +98,7 @@ select * from N4D_STG_INDICATOR;
 TRUNCATE STG_INDICATOR IMMEDIATE;
 
 --INSERT NCD-----------------------------------------
-INSERT INTO STG_INDICATOR
+INSERT INTO STG_INDICATOR(ISO3, INDICATOR_ID, YEAR, VALUE )
 select  ncd.ISO3 , md.INDICATOR_ID, ncd.year, ncd.value
 from
 NCD_SRC_INDICATOR ncd left join 
@@ -111,7 +110,7 @@ and ncd.iso3 in (select ISO_CD3 from IDB_COUNTRY);
 
 
 --INSERT WB-----------------------------------------
-INSERT INTO STG_INDICATOR
+INSERT INTO STG_INDICATOR(ISO3, INDICATOR_ID, YEAR, VALUE )
 select  co.ISO_CD3 , md.INDICATOR_ID, wb.year, wb.value
 from
 WB_SRC_INDICATOR wb left join 
@@ -124,7 +123,7 @@ where source_group='WB/Findex' and VALUE is not null;
 
 
 --INSERT N4D-----------------------------------------
-INSERT INTO STG_INDICATOR
+INSERT INTO STG_INDICATOR(ISO3, INDICATOR_ID, YEAR, VALUE )
 select  n4d.ISO3 , md.INDICATOR_ID, n4d.year, n4d.value
 from
 N4D_SRC_INDICATOR n4d left join 
