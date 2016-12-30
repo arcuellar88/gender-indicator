@@ -11,15 +11,50 @@
 #        Alejandro Rodriguez               #
 #                                          #
 ############################################
-library(RSocrata)
-library(wbstats)
-library(WDI)
-library(R.utils)
-library(tools)
+
+#################################
+# SET UP Algorithm Parameters   #
+#################################
+source("R/config.R")
+
+
+#Install required libraries
+
+  list.of.packages <- c("dplyr", "wbstats","devtools","downloader","WDI","tidyr","stringr","R.utils","tools","RSocrata")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)) install.packages(new.packages)
+
+library(devtools)
+
+
+#Set proxy:
+library(httr)
+set_config(
+  use_proxy(url=PROXY_HOST, port=PROXY_PORT, username=PROXY_USER,password=PROXY_PWD)
+)
+
+  #Object Storage IBM
+  list.of.packages <- c("objectStoreR")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)) install_github('IBMDataScience/objectStoreR') #installs the package
+  
+  #N4D API
+  list.of.packages <- c("idbstats")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)) install_github('arcuellar88/iadbstats')
+
+#Load required libraries
 library(dplyr)
+library(wbstats)
+library(downloader)
+library(WDI)
 library(tidyr)
 library(stringr)
-library(countrycode)
+library('objectStoreR')
+library(idbstats)
+
+
+
 
 ############################################
 #                                          #
@@ -39,10 +74,7 @@ library(countrycode)
 ############################################
 
 #setwd("SOURCE_FOLDER")
-#################################
-# SET UP Algorithm Parameters   #
-#################################
-source("R/config.R")
+
 
 #################################
 # Load harmonization functions  #
